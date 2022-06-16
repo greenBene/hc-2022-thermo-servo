@@ -1,16 +1,12 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-// SERVO variables
 Servo servo;
-int servoAngle = 0;
 
-// TEMPERATURE  variables
 int const temperatureSensorPin = A0;
 float temperatureArray[10];
 int currentTemperatureIndex = 0;
 
-// OTHER
 unsigned long time_last_temperature_update = 0;
 
 
@@ -45,7 +41,7 @@ void update_temperature(){
   // Servo motor can depict 180 degree 
   // Thus, we map our avgTemp to the half circle
   // We aribtraily select 15 and 35 and lower and upper bound.  
-  servoAngle = map(avgTemp, 15, 35, 0, 179);
+  int servoAngle = map(avgTemp, 15, 35, 0, 179);
   // Servo Motor SM-S2309S
   servo.write(servoAngle);
 
