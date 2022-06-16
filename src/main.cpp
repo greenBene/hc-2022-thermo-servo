@@ -11,6 +11,9 @@ int const temperatureSensorPin = A0;
 float temperatureArray[10];
 int currentTemperatureIndex = 0;
 
+// OTHER
+unsigned long time_last_temperature_update = 0;
+
 
 float calculateMeanTemperature(float temperature) {
   temperatureArray[currentTemperatureIndex] = temperature;
@@ -22,6 +25,32 @@ float calculateMeanTemperature(float temperature) {
   mean_temperature /= 10.0;
   return mean_temperature;
 }
+
+void update_temperature(){
+  // Get and update temperature
+
+  // Sensor is a TMP36
+  // https://www.arduino.cc/en/uploads/Main/TemperatureSensor.pdf
+  int sensorVal = analogRead(temperatureSensorPin);
+  float voltage = (sensorVal/1024.0) * 5.0;
+  float temperature = (voltage - 0.5) * 100;
+  float avgTemp = calculateMeanTemperature(temperature);
+  servoAngle = map(avgTemp, 15, 35, 0, 179);
+  servo.write(servoAngle);
+
+  // Loging
+  Serial.print(" Sensor Value: ");
+  Serial.print(sensorVal);
+  Serial.print(", Volts: ");
+  Serial.print(voltage);
+  Serial.print(", degreees C: ");
+  Serial.print(temperature);
+  Serial.print(", avg(degreees) C: ");
+  Serial.print(avgTemp);
+  Serial.print(", angle: ");
+  Serial.println(servoAngle);
+}
+
 
 void setup() {
   Serial.begin(9600);
@@ -35,26 +64,13 @@ void setup() {
 }
 
 void loop() {
-  millis();
-  int sensorVal = analogRead(temperatureSensorPin);
-  Serial.print("Sensor Value: ");
-  Serial.print(sensorVal);
-  
-  float voltage = (sensorVal/1024.0) * 5.0;
-  Serial.print(", Volts: ");
-  Serial.print(voltage);
+  unsigned long current_time = millis();
 
-  float temperature = (voltage - 0.5) * 100;
-  Serial.print(", degreees C: ");
-  Serial.print(temperature);
+  if(current_time >= time_last_temperature_update + 1000){
+    time_last_temperature_update = current_time;
+    Serial.print("Current Run Time: ");
+    Serial.print(current_time);
 
-  float avgTemp = calculateMeanTemperature(temperature);
-  Serial.print(", avg(degreees) C: ");
-  Serial.print(avgTemp);
-  
-  servoAngle = map(avgTemp, 15, 35, 0, 179);
-  Serial.print(", angle: ");
-  Serial.println(servoAngle);
-  servo.write(servoAngle);
-  delay(1000);
+    update_temperature();
+  }
 }
