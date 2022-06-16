@@ -4,7 +4,6 @@
 // SERVO variables
 Servo servo;
 int servoAngle = 0;
-int sensorVal;
 
 // TEMPERATURE  variables
 int const temperatureSensorPin = A0;
@@ -29,16 +28,28 @@ float calculateMeanTemperature(float temperature) {
 void update_temperature(){
   // Get and update temperature
 
+
   // Sensor is a TMP36
   // https://www.arduino.cc/en/uploads/Main/TemperatureSensor.pdf
+  // Read in sesnor value as value between 0 and 1024.
   int sensorVal = analogRead(temperatureSensorPin);
+  // Calculate voltage (scaled linearly)
   float voltage = (sensorVal/1024.0) * 5.0;
+  // Calculate temperature. 
+  // Remove offset of 0.5V (TMP36 specific)
+  // 10mV delta <=> 1 degree Celsius. 
   float temperature = (voltage - 0.5) * 100;
+  // Sensor quite noisy (see serial output)
+  // Thus calculating average value 
   float avgTemp = calculateMeanTemperature(temperature);
+  // Servo motor can depict 180 degree 
+  // Thus, we map our avgTemp to the half circle
+  // We aribtraily select 15 and 35 and lower and upper bound.  
   servoAngle = map(avgTemp, 15, 35, 0, 179);
+  // Servo Motor SM-S2309S
   servo.write(servoAngle);
 
-  // Loging
+  // Logging
   Serial.print(" Sensor Value: ");
   Serial.print(sensorVal);
   Serial.print(", Volts: ");
