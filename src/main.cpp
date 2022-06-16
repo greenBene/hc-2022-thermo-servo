@@ -1,37 +1,42 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-Servo myServo;
-int const sensorPin = A0;
-int angle = 0;
+// SERVO variables
+Servo servo;
+int servoAngle = 0;
 int sensorVal;
 
-float tempArr[10];
-int valueIndex = 0;
+// TEMPERATURE  variables
+int const temperatureSensorPin = A0;
+float temperatureArray[10];
+int currentTemperatureIndex = 0;
 
 
-float calcAvgTemp(float temp) {
-  tempArr[valueIndex] = temp;
-  valueIndex = (valueIndex + 1) % 10;
-  float avg_temp = 0;
+float calculateMeanTemperature(float temperature) {
+  temperatureArray[currentTemperatureIndex] = temperature;
+  currentTemperatureIndex = (currentTemperatureIndex + 1) % 10;
+  float mean_temperature = 0;
   for (int i = 0; i < 10; i++) {
-    avg_temp += tempArr[i];
+    mean_temperature += temperatureArray[i];
   }
-  avg_temp /= 10.0;
-  return avg_temp;
+  mean_temperature /= 10.0;
+  return mean_temperature;
 }
 
 void setup() {
-  myServo.attach(9);
   Serial.begin(9600);
+  Serial.println("Good morning! =)");
+
+  servo.attach(9);
 
   for (int i = 0; i < 10; i++) {
-    tempArr[i] = 15.0;
+    temperatureArray[i] = 15.0;
   }
 }
 
 void loop() {
-  int sensorVal = analogRead(sensorPin);
+  millis();
+  int sensorVal = analogRead(temperatureSensorPin);
   Serial.print("Sensor Value: ");
   Serial.print(sensorVal);
   
@@ -43,13 +48,13 @@ void loop() {
   Serial.print(", degreees C: ");
   Serial.print(temperature);
 
-  float avgTemp = calcAvgTemp(temperature);
+  float avgTemp = calculateMeanTemperature(temperature);
   Serial.print(", avg(degreees) C: ");
   Serial.print(avgTemp);
   
-  angle = map(avgTemp, 15, 35, 0, 179);
+  servoAngle = map(avgTemp, 15, 35, 0, 179);
   Serial.print(", angle: ");
-  Serial.println(angle);
-  myServo.write(angle);
+  Serial.println(servoAngle);
+  servo.write(servoAngle);
   delay(1000);
 }
