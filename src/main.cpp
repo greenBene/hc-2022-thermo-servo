@@ -3,12 +3,41 @@
 
 Servo servo;
 
+// A* -> analogue pins. Can read 1024 different values.
 int const temperatureSensorPin = A0;
 float temperatureArray[10];
 int currentTemperatureIndex = 0;
 
 unsigned long time_last_temperature_update = 0;
 
+
+void update_temperature();
+float calculateMeanTemperature(float);
+
+
+void setup() {
+  // Setup Serial
+  Serial.begin(9600);
+  Serial.println("Good morning! =)");
+
+  servo.attach(9);
+
+  for (int i = 0; i < 10; i++) {
+    temperatureArray[i] = 15.0;
+  }
+}
+
+void loop() {
+  unsigned long current_time = millis();
+
+  if(current_time >= time_last_temperature_update + 1000){
+    time_last_temperature_update = current_time;
+    Serial.print("Current Run Time: ");
+    Serial.print(current_time);
+
+    update_temperature();
+  }
+}
 
 float calculateMeanTemperature(float temperature) {
   temperatureArray[currentTemperatureIndex] = temperature;
@@ -56,28 +85,4 @@ void update_temperature(){
   Serial.print(avgTemp);
   Serial.print(", angle: ");
   Serial.println(servoAngle);
-}
-
-
-void setup() {
-  Serial.begin(9600);
-  Serial.println("Good morning! =)");
-
-  servo.attach(9);
-
-  for (int i = 0; i < 10; i++) {
-    temperatureArray[i] = 15.0;
-  }
-}
-
-void loop() {
-  unsigned long current_time = millis();
-
-  if(current_time >= time_last_temperature_update + 1000){
-    time_last_temperature_update = current_time;
-    Serial.print("Current Run Time: ");
-    Serial.print(current_time);
-
-    update_temperature();
-  }
 }
